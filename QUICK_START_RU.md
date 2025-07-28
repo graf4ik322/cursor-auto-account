@@ -39,21 +39,11 @@ sudo chmod +x /usr/local/bin/docker-compose
 sudo reboot
 ```
 
-### Шаг 3: Установка MySQL
+### Шаг 3: Настройка переменных окружения (опционально)
 
-**Важно:** Приложение автоматически создаст базу данных при первом запуске. Вам нужно только установить MySQL сервер.
+**Важно:** Все устанавливается автоматически через Docker Compose!
 
-```bash
-# Установка MySQL
-sudo apt install mysql-server -y
-
-# Настройка безопасности
-sudo mysql_secure_installation
-```
-
-### Шаг 4: Создание пользователя базы данных (опционально)
-
-**Примечание:** Приложение автоматически создаст базу данных при первом запуске. Этот шаг опциональный, но рекомендуется для продакшена.
+Если вы хотите изменить настройки по умолчанию:
 
 ```bash
 # Редактирование конфигурации
@@ -66,20 +56,11 @@ nano .env
 SECRET_KEY=your_generated_secret_key
 ADMIN_PASSWORD=your_admin_password
 
-```sql
-CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'your_password_123!';
-GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
-
-Затем настройте переменные в файле `.env`:
-```env
 # Настройки базы данных (опционально)
 DB_PASSWORD=your_secure_password
 ```
 
-### Шаг 5: Клонирование и настройка
+### Шаг 4: Клонирование и настройка
 
 ```bash
 # Клонирование репозитория
@@ -108,7 +89,7 @@ DB_PASSWORD=your_secure_password
 EMAIL_DOMAIN=yourdomain.com
 ```
 
-### Шаг 6: Генерация секретного ключа
+### Шаг 5: Генерация секретного ключа
 
 ```bash
 # Генерация секретного ключа
