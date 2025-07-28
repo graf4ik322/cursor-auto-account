@@ -60,9 +60,11 @@ SECRET_KEY=secret
 ```sql
 -- Создание пользователя с ограниченными правами
 CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'strong_password_123!';
-GRANT SELECT, INSERT, UPDATE, DELETE ON cursor_accounts.* TO 'cursor_user'@'localhost';
+GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
+
+**Примечание:** Приложение автоматически создаст базу данных при первом запуске.
 
 #### Ограничение доступа к MySQL
 ```ini

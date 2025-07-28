@@ -44,7 +44,7 @@
 
 #### Шаг 1: Клонирование репозитория
 ```bash
-git clone https://github.com/zoowayss/cursor-auto-account.git
+git clone https://github.com/YOUR_USERNAME/cursor-auto-account.git
 cd cursor-auto-account
 ```
 
@@ -129,9 +129,11 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 **DEBUG** - Режим отладки. Установите `true` только для разработки. В продакшене всегда `false`.
 
-#### Шаг 3: Установка и настройка MySQL (если не установлен)
+#### Шаг 3: Настройка базы данных
 
-Если у вас еще нет MySQL, установите его:
+**Важно:** Приложение автоматически создаст базу данных при первом запуске. Вам нужно только установить MySQL сервер.
+
+**Установка MySQL:**
 
 **Ubuntu/Debian:**
 ```bash
@@ -147,16 +149,15 @@ sudo systemctl start mysqld
 sudo mysql_secure_installation
 ```
 
-**Создание базы данных и пользователя:**
+**Создание пользователя MySQL (рекомендуется для продакшена):**
 ```bash
 sudo mysql -u root -p
 ```
 
 В MySQL консоли выполните:
 ```sql
-CREATE DATABASE cursor_accounts CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'your_secure_password';
-GRANT ALL PRIVILEGES ON cursor_accounts.* TO 'cursor_user'@'localhost';
+GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
@@ -166,6 +167,8 @@ EXIT;
 DB_USER=cursor_user
 DB_PASSWORD=your_secure_password
 ```
+
+**Примечание:** Если вы не создаете отдельного пользователя, приложение будет использовать root пользователя с настройками по умолчанию.
 
 #### Шаг 4: Запуск сервиса
 ```bash
@@ -198,46 +201,26 @@ docker-compose up -d
 
 #### Настройка Caddy для поддомена
 
-Создайте новый Caddyfile для поддомена:
+**Важно:** В репозитории уже есть готовый `Caddyfile`. Вам нужно только изменить домен в нем.
 
+Отредактируйте существующий `Caddyfile`:
+
+```bash
+nano Caddyfile
+```
+
+Замените домен в первой строке:
 ```caddyfile
-# Caddyfile для поддомена
+# Измените эту строку на ваш домен
 cursor.yourdomain.com {
-    # Включение gzip сжатия
-    encode gzip
-
-    # Проксирование запросов к приложению
-    reverse_proxy localhost:8001 {
-        health_path /api/health
-        health_interval 30s
-        health_timeout 5s
-        health_status 200
-        header_up Host {host}
-        header_up X-Real-IP {remote}
-        header_up X-Forwarded-For {remote}
-        header_up X-Forwarded-Proto {scheme}
-        transport http {
-            keepalive 60s
-        }
-    }
-
-    # Настройки безопасности
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        X-XSS-Protection "1; mode=block"
-        -Server
-    }
-
-    # Логирование
-    log {
-        output file /var/log/caddy/cursor-subdomain.log
-        format json
-        level INFO
-    }
+    # ... остальная конфигурация уже готова ...
 }
+```
+
+**Или создайте новый Caddyfile для поддомена:**
+```bash
+cp Caddyfile Caddyfile.subdomain
+nano Caddyfile.subdomain
 ```
 
 #### Решение конфликтов портов

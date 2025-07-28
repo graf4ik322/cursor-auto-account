@@ -52,7 +52,7 @@
 
 1. 克隆仓库
 ```bash
-git clone https://github.com/zoowayss/cursor-auto-account.git
+git clone https://github.com/YOUR_USERNAME/cursor-auto-account.git
 cd cursor-auto-account
 ```
 
