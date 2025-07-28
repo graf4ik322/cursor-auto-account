@@ -128,7 +128,9 @@ sudo chown caddy:caddy /var/log/caddy
 
 ## Настройка базы данных
 
-### 1. Создание базы данных и пользователя
+### 1. Создание пользователя базы данных
+
+**Важно:** Приложение автоматически создаст базу данных при первом запуске. Вам нужно только создать пользователя MySQL.
 
 ```bash
 # Подключение к MySQL
@@ -138,20 +140,16 @@ sudo mysql -u root -p
 В MySQL консоли выполните:
 
 ```sql
--- Создание базы данных
-CREATE DATABASE cursor_accounts CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 -- Создание пользователя
 CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'your_very_secure_password_123!';
 
--- Предоставление прав
-GRANT ALL PRIVILEGES ON cursor_accounts.* TO 'cursor_user'@'localhost';
+-- Предоставление прав (приложение само создаст базу данных)
+GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
 
 -- Применение изменений
 FLUSH PRIVILEGES;
 
--- Проверка создания
-SHOW DATABASES;
+-- Проверка создания пользователя
 SELECT User, Host FROM mysql.user WHERE User = 'cursor_user';
 
 -- Выход
@@ -201,7 +199,7 @@ sudo systemctl restart mysql
 cd ~
 
 # Клонирование репозитория
-git clone https://github.com/zoowayss/cursor-auto-account.git
+git clone https://github.com/YOUR_USERNAME/cursor-auto-account.git
 cd cursor-auto-account
 ```
 
@@ -266,61 +264,31 @@ docker-compose logs -f app
 
 ## Настройка Caddy для поддомена
 
-### 1. Создание Caddyfile
+### 1. Настройка Caddyfile
 
+**Важно:** В репозитории уже есть готовый `Caddyfile`. Вам нужно только изменить домен в нем.
+
+```bash
+# Редактирование существующего Caddyfile
+nano Caddyfile
+```
+
+Замените домен в первой строке на ваш:
+```caddyfile
+# Измените эту строку на ваш домен
+cursor.yourdomain.com {
+    # ... остальная конфигурация уже готова ...
+}
+```
+
+**Для использования с системным Caddy:**
 ```bash
 # Создание директории для конфигураций
 sudo mkdir -p /etc/caddy/sites
 
-# Создание Caddyfile для поддомена
+# Копирование и редактирование конфигурации
+sudo cp Caddyfile /etc/caddy/sites/cursor.yourdomain.com
 sudo nano /etc/caddy/sites/cursor.yourdomain.com
-```
-
-Содержимое файла:
-
-```caddyfile
-# Caddyfile для поддомена cursor.yourdomain.com
-cursor.yourdomain.com {
-    # Включение gzip сжатия
-    encode gzip
-
-    # Проксирование запросов к приложению
-    reverse_proxy localhost:8001 {
-        health_path /api/health
-        health_interval 30s
-        health_timeout 5s
-        health_status 200
-        header_up Host {host}
-        header_up X-Real-IP {remote}
-        header_up X-Forwarded-For {remote}
-        header_up X-Forwarded-Proto {scheme}
-        transport http {
-            keepalive 60s
-        }
-    }
-
-    # Настройки безопасности
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        X-XSS-Protection "1; mode=block"
-        -Server
-    }
-
-    # Логирование
-    log {
-        output file /var/log/caddy/cursor-subdomain.log
-        format json
-        level INFO
-    }
-
-    # Обработка ошибок
-    handle_errors {
-        respond "{http.error.status_code} {http.error.status_text}" {http.error.status_code}
-    }
-}
 ```
 
 ### 2. Настройка основного Caddyfile
@@ -394,8 +362,8 @@ ports:
 ### 3. Обновление Caddyfile
 
 ```bash
-# Редактирование Caddyfile для поддомена
-sudo nano /etc/caddy/sites/cursor.yourdomain.com
+# Редактирование Caddyfile
+nano Caddyfile
 ```
 
 Измените порт в reverse_proxy:
@@ -408,6 +376,12 @@ cursor.yourdomain.com {
         # ... остальные настройки ...
     }
 }
+```
+
+**Если используете системный Caddy:**
+```bash
+# Редактирование Caddyfile для поддомена
+sudo nano /etc/caddy/sites/cursor.yourdomain.com
 ```
 
 ### 4. Перезапуск сервисов

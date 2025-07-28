@@ -49,7 +49,9 @@ sudo apt install mysql-server -y
 sudo mysql_secure_installation
 ```
 
-### Шаг 4: Создание базы данных
+### Шаг 4: Создание пользователя базы данных (опционально)
+
+**Примечание:** Приложение автоматически создаст базу данных при первом запуске. Этот шаг опциональный, но рекомендуется для продакшена.
 
 ```bash
 # Подключение к MySQL
@@ -59,9 +61,8 @@ sudo mysql -u root -p
 В MySQL консоли выполните:
 
 ```sql
-CREATE DATABASE cursor_accounts;
 CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'your_password_123!';
-GRANT ALL PRIVILEGES ON cursor_accounts.* TO 'cursor_user'@'localhost';
+GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
@@ -71,7 +72,7 @@ EXIT;
 ```bash
 # Клонирование репозитория
 cd ~
-git clone https://github.com/zoowayss/cursor-auto-account.git
+git clone https://github.com/YOUR_USERNAME/cursor-auto-account.git
 cd cursor-auto-account
 
 # Копирование конфигурации
@@ -127,33 +128,28 @@ http://YOUR_SERVER_IP:8001
    - **IP**: IP-адрес вашего сервера
    - **Прокси**: Включен (оранжевое облачко)
 
-### Установка Caddy
+### Настройка Caddy
+
+**Важно:** В репозитории уже есть готовый `Caddyfile`. Вам нужно только изменить домен в нем.
 
 ```bash
-# Установка Caddy
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
-sudo apt update
-sudo apt install caddy -y
+# Редактирование существующего Caddyfile
+nano Caddyfile
 ```
 
-### Создание Caddyfile
-
-```bash
-sudo nano /etc/caddy/Caddyfile
-```
-
-Содержимое:
-
+Замените домен в первой строке на ваш:
 ```caddyfile
 cursor.yourdomain.com {
-    reverse_proxy localhost:8001
+    # ... остальная конфигурация уже готова ...
 }
 ```
 
-### Перезапуск Caddy
-
+**Для использования с системным Caddy:**
 ```bash
+# Копирование конфигурации в системную директорию
+sudo cp Caddyfile /etc/caddy/Caddyfile
+
+# Перезапуск Caddy
 sudo systemctl restart caddy
 ```
 
