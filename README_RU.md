@@ -133,6 +133,8 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 **Важно:** Приложение автоматически создаст базу данных при первом запуске. Вам нужно только установить MySQL сервер.
 
+**Установка MySQL:**
+
 **Ubuntu/Debian:**
 ```bash
 sudo apt update
@@ -147,8 +149,20 @@ sudo systemctl start mysqld
 sudo mysql_secure_installation
 ```
 
-Если вы хотите изменить настройки по умолчанию, отредактируйте `.env` файл:
+**Создание пользователя MySQL (рекомендуется для продакшена):**
+```bash
+sudo mysql -u root -p
+```
 
+В MySQL консоли выполните:
+```sql
+CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+Затем обновите `.env` файл:
 ```env
 # Настройки базы данных (опционально)
 DB_USER=root
@@ -159,6 +173,8 @@ DB_NAME=cursor_accounts
 SECRET_KEY=your_generated_secret_key
 ADMIN_PASSWORD=your_admin_password
 ```
+
+**Примечание:** Если вы не создаете отдельного пользователя, приложение будет использовать root пользователя с настройками по умолчанию.
 
 #### Шаг 4: Запуск сервиса
 ```bash

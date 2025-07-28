@@ -179,6 +179,53 @@ EXIT;
 ### 1. Создание файла конфигурации
 
 ```bash
+# Редактирование конфигурации MySQL
+sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
+```
+
+Добавьте или измените следующие строки:
+
+```ini
+[mysqld]
+# Привязка к localhost только
+bind-address = 127.0.0.1
+
+# Максимальное количество соединений
+max_connections = 100
+
+# Таймаут неактивных соединений
+wait_timeout = 600
+interactive_timeout = 600
+
+# Логирование
+log_error = /var/log/mysql/error.log
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2
+```
+
+Перезапустите MySQL:
+
+```bash
+sudo systemctl restart mysql
+```
+
+## Развертывание приложения
+
+### 1. Клонирование репозитория
+
+```bash
+# Переход в домашнюю директорию
+cd ~
+
+# Клонирование репозитория
+git clone https://github.com/YOUR_USERNAME/cursor-auto-account.git
+cd cursor-auto-account
+```
+
+### 2. Настройка переменных окружения
+
+```bash
 # Копирование примера конфигурации
 cp .env.example .env
 

@@ -51,9 +51,9 @@ sudo apt install mysql-server -y
 sudo mysql_secure_installation
 ```
 
-### Шаг 4: Настройка переменных окружения (опционально)
+### Шаг 4: Создание пользователя базы данных (опционально)
 
-Если вы хотите изменить настройки по умолчанию:
+**Примечание:** Приложение автоматически создаст базу данных при первом запуске. Этот шаг опциональный, но рекомендуется для продакшена.
 
 ```bash
 # Редактирование конфигурации
@@ -66,6 +66,15 @@ nano .env
 SECRET_KEY=your_generated_secret_key
 ADMIN_PASSWORD=your_admin_password
 
+```sql
+CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'your_password_123!';
+GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+Затем настройте переменные в файле `.env`:
+```env
 # Настройки базы данных (опционально)
 DB_PASSWORD=your_secure_password
 ```
