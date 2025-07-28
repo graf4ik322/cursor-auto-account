@@ -76,6 +76,11 @@ EMAIL_DOMAIN=your_email_domain
 docker-compose up -d
 ```
 
+**自动安装内容：**
+- ✅ 自动创建数据库和表
+- ✅ 应用程序容器
+- ✅ 网络配置
+
 > 注意：如果不创建 `.env` 文件，将使用 docker-compose.yml 中的默认值
 
 ### 使用 Docker 直接部署

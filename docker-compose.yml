@@ -6,7 +6,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile  # 使用更新后的Dockerfile
+      dockerfile: Dockerfile
     container_name: cursor-app
     restart: always
     environment:

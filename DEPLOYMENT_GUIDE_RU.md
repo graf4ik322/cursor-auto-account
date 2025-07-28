@@ -68,7 +68,25 @@ sudo systemctl enable mysqld
 sudo mysql_secure_installation
 ```
 
-### 3. Установка Caddy (веб-сервер)
+### 3. Установка Docker и Docker Compose
+
+```bash
+# Установка Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Добавление пользователя в группу docker
+sudo usermod -aG docker $USER
+
+# Установка Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Перезагрузка для применения изменений группы
+sudo reboot
+```
+
+### 4. Установка Caddy (веб-сервер)
 
 ```bash
 # Добавление репозитория Caddy
@@ -156,7 +174,9 @@ SELECT User, Host FROM mysql.user WHERE User = 'cursor_user';
 EXIT;
 ```
 
-### 2. Настройка безопасности MySQL
+## Настройка переменных окружения
+
+### 1. Создание файла конфигурации
 
 ```bash
 # Редактирование конфигурации MySQL
@@ -216,20 +236,12 @@ nano .env
 Настройте следующие переменные:
 
 ```env
-# Настройки базы данных
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=cursor_user
-DB_PASSWORD=your_very_secure_password_123!
-DB_NAME=cursor_accounts
-
-# Настройки безопасности
+# Настройки безопасности (обязательно измените!)
 SECRET_KEY=your_generated_secret_key_here
-TOKEN_EXPIRY_DAYS=30
-
-# Настройки администратора
-ADMIN_USERNAME=admin
 ADMIN_PASSWORD=your_admin_password_here
+
+# Настройки базы данных (опционально)
+DB_PASSWORD=your_secure_password_here
 
 # Настройки email
 EMAIL_DOMAIN=yourdomain.com
@@ -240,7 +252,7 @@ PORT=8001
 DEBUG=false
 ```
 
-### 3. Генерация секретного ключа
+### 2. Генерация секретного ключа
 
 ```bash
 # Генерация случайного секретного ключа
@@ -249,7 +261,20 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 
 Скопируйте результат в переменную `SECRET_KEY` в файле `.env`.
 
-### 4. Запуск приложения
+## Развертывание приложения
+
+### 1. Клонирование репозитория
+
+```bash
+# Переход в домашнюю директорию
+cd ~
+
+# Клонирование репозитория
+git clone https://github.com/YOUR_USERNAME/cursor-auto-account.git
+cd cursor-auto-account
+```
+
+### 2. Запуск приложения
 
 ```bash
 # Сборка и запуск контейнеров
@@ -261,6 +286,11 @@ docker-compose ps
 # Просмотр логов
 docker-compose logs -f app
 ```
+
+**Что происходит при запуске:**
+- ✅ Запускается приложение Cursor Account Manager
+- ✅ Автоматически создается база данных `cursor_accounts`
+- ✅ Создается администратор по умолчанию
 
 ## Настройка Caddy для поддомена
 
