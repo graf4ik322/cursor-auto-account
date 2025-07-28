@@ -53,9 +53,22 @@ sudo chmod +x /usr/local/bin/docker-compose
 sudo reboot
 ```
 
-### 2. Установка Docker и Docker Compose
+### 2. Установка MySQL
 
-**Важно:** База данных MySQL устанавливается автоматически через Docker Compose!
+```bash
+# Ubuntu/Debian
+sudo apt install mysql-server -y
+
+# CentOS/RHEL
+sudo yum install mysql-server -y
+sudo systemctl start mysqld
+sudo systemctl enable mysqld
+
+# Настройка безопасности MySQL
+sudo mysql_secure_installation
+```
+
+### 3. Установка Docker и Docker Compose
 
 ```bash
 # Установка Docker
@@ -73,7 +86,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 sudo reboot
 ```
 
-### 3. Установка Caddy (веб-сервер)
+### 4. Установка Caddy (веб-сервер)
 
 ```bash
 # Добавление репозитория Caddy
@@ -131,11 +144,39 @@ sudo chown caddy:caddy /var/log/caddy
 2. Включите "Always Use HTTPS"
 3. Включите "Minimum TLS Version" и установите TLS 1.2
 
+## Настройка базы данных
+
+### 1. Создание пользователя базы данных
+
+**Важно:** Приложение автоматически создаст базу данных при первом запуске. Вам нужно только создать пользователя MySQL.
+
+```bash
+# Подключение к MySQL
+sudo mysql -u root -p
+```
+
+В MySQL консоли выполните:
+
+```sql
+-- Создание пользователя
+CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'your_very_secure_password_123!';
+
+-- Предоставление прав (приложение само создаст базу данных)
+GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
+
+-- Применение изменений
+FLUSH PRIVILEGES;
+
+-- Проверка создания пользователя
+SELECT User, Host FROM mysql.user WHERE User = 'cursor_user';
+
+-- Выход
+EXIT;
+```
+
 ## Настройка переменных окружения
 
 ### 1. Создание файла конфигурации
-
-**Важно:** База данных MySQL устанавливается и настраивается автоматически через Docker Compose!
 
 ```bash
 # Копирование примера конфигурации
@@ -196,14 +237,13 @@ docker-compose up -d
 docker-compose ps
 
 # Просмотр логов
-docker-compose logs -f
+docker-compose logs -f app
 ```
 
 **Что происходит при запуске:**
-- ✅ Автоматически устанавливается MySQL 8.0
-- ✅ Создается база данных `cursor_accounts`
 - ✅ Запускается приложение Cursor Account Manager
-- ✅ Настраивается сеть между контейнерами
+- ✅ Автоматически создается база данных `cursor_accounts`
+- ✅ Создается администратор по умолчанию
 
 ## Настройка Caddy для поддомена
 

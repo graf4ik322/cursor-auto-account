@@ -129,9 +129,23 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 **DEBUG** - Режим отладки. Установите `true` только для разработки. В продакшене всегда `false`.
 
-#### Шаг 3: Настройка переменных окружения (опционально)
+#### Шаг 3: Установка MySQL
 
-**Важно:** База данных MySQL устанавливается и настраивается автоматически через Docker Compose. Вам не нужно устанавливать MySQL вручную!
+**Важно:** Приложение автоматически создаст базу данных при первом запуске. Вам нужно только установить MySQL сервер.
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update
+sudo apt install mysql-server
+sudo mysql_secure_installation
+```
+
+**CentOS/RHEL:**
+```bash
+sudo yum install mysql-server
+sudo systemctl start mysqld
+sudo mysql_secure_installation
+```
 
 Если вы хотите изменить настройки по умолчанию, отредактируйте `.env` файл:
 
@@ -152,10 +166,9 @@ docker-compose up -d
 ```
 
 **Что происходит при запуске:**
-- ✅ Автоматически устанавливается MySQL 8.0
-- ✅ Создается база данных `cursor_accounts`
 - ✅ Запускается приложение Cursor Account Manager
-- ✅ Настраивается сеть между контейнерами
+- ✅ Автоматически создается база данных `cursor_accounts`
+- ✅ Создается администратор по умолчанию
 
 > **Важно:** Если вы не создали файл `.env`, будут использованы значения по умолчанию из `docker-compose.yml`
 

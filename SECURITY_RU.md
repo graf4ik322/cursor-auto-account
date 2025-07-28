@@ -56,39 +56,30 @@ SECRET_KEY=secret
 
 ### 3. Настройка базы данных
 
-#### Настройка базы данных в Docker
-
-**Важно:** База данных MySQL устанавливается автоматически через Docker Compose!
-
-Для изменения пароля базы данных отредактируйте `.env` файл:
-```env
-DB_PASSWORD=your_very_secure_password_123!
+#### Создание отдельного пользователя
+```sql
+-- Создание пользователя с ограниченными правами
+CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'strong_password_123!';
+GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
-Затем перезапустите контейнеры:
-```bash
-docker-compose down
-docker-compose up -d
+**Примечание:** Приложение автоматически создаст базу данных при первом запуске.
+
+#### Ограничение доступа к MySQL
+```ini
+# /etc/mysql/mysql.conf.d/mysqld.cnf
+[mysqld]
+# Привязка только к localhost
+bind-address = 127.0.0.1
+
+# Максимальное количество соединений
+max_connections = 50
+
+# Таймаут неактивных соединений
+wait_timeout = 300
+interactive_timeout = 300
 ```
-
-**Примечание:** База данных работает в контейнере `cursor-mysql` и автоматически инициализируется.
-
-#### Ограничение доступа к MySQL в Docker
-
-**Важно:** База данных работает в Docker контейнере и изолирована от системы.
-
-Для дополнительной безопасности можно ограничить доступ к порту 3306 в файрволе:
-
-```bash
-# UFW (Ubuntu/Debian)
-sudo ufw deny 3306
-
-# Firewalld (CentOS/RHEL)
-sudo firewall-cmd --permanent --remove-port=3306/tcp
-sudo firewall-cmd --reload
-```
-
-**Примечание:** По умолчанию MySQL доступен только внутри Docker сети.
 
 ### 4. Настройка файрвола
 
