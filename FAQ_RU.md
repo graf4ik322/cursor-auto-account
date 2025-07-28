@@ -35,7 +35,8 @@ nano ~/backup.sh
 ```
 ```bash
 #!/bin/bash
-mysqldump -u cursor_user -p'password' cursor_accounts > backup_$(date +%Y%m%d).sql
+# Резервная копия базы данных из Docker контейнера
+docker exec cursor-mysql mysqldump -u root -p'password' cursor_accounts > backup_$(date +%Y%m%d).sql
 ```
 ```bash
 # Добавление в crontab (ежедневно в 2:00)
@@ -43,7 +44,7 @@ crontab -e
 0 2 * * * /home/user/backup.sh
 ```
 
-**Примечание:** Приложение автоматически создаст базу данных при первом запуске.
+**Примечание:** База данных работает в Docker контейнере `cursor-mysql`.
 
 ### Q: Как обновить приложение до новой версии?
 
@@ -147,13 +148,33 @@ docker system prune -a
 
 ### Q: Как подключиться к базе данных извне?
 
-**A:** По умолчанию MySQL доступен только локально. Для внешнего доступа измените `bind-address` в конфигурации MySQL.
+**A:** База данных работает в Docker контейнере. Для подключения используйте:
+```bash
+# Подключение к контейнеру MySQL
+docker exec -it cursor-mysql mysql -u root -p cursor_accounts
+
+# Или через порт 3306 (если открыт)
+mysql -h localhost -P 3306 -u root -p cursor_accounts
+```
 
 ### Q: Как изменить пароль пользователя базы данных?
 
-**A:** 
+**A:** Измените переменную `DB_PASSWORD` в файле `.env` и перезапустите контейнеры:
+```bash
+# Редактирование .env файла
+nano .env
+
+# Перезапуск контейнеров
+docker-compose down
+docker-compose up -d
+```
+
+Или подключитесь к контейнеру MySQL:
+```bash
+docker exec -it cursor-mysql mysql -u root -p
+```
 ```sql
-ALTER USER 'cursor_user'@'localhost' IDENTIFIED BY 'new_password';
+ALTER USER 'root'@'%' IDENTIFIED BY 'new_password';
 FLUSH PRIVILEGES;
 ```
 

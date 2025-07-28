@@ -53,19 +53,24 @@ sudo chmod +x /usr/local/bin/docker-compose
 sudo reboot
 ```
 
-### 2. Установка MySQL
+### 2. Установка Docker и Docker Compose
+
+**Важно:** База данных MySQL устанавливается автоматически через Docker Compose!
 
 ```bash
-# Ubuntu/Debian
-sudo apt install mysql-server -y
+# Установка Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 
-# CentOS/RHEL
-sudo yum install mysql-server -y
-sudo systemctl start mysqld
-sudo systemctl enable mysqld
+# Добавление пользователя в группу docker
+sudo usermod -aG docker $USER
 
-# Настройка безопасности MySQL
-sudo mysql_secure_installation
+# Установка Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Перезагрузка для применения изменений группы
+sudo reboot
 ```
 
 ### 3. Установка Caddy (веб-сервер)
@@ -126,69 +131,47 @@ sudo chown caddy:caddy /var/log/caddy
 2. Включите "Always Use HTTPS"
 3. Включите "Minimum TLS Version" и установите TLS 1.2
 
-## Настройка базы данных
+## Настройка переменных окружения
 
-### 1. Создание пользователя базы данных
+### 1. Создание файла конфигурации
 
-**Важно:** Приложение автоматически создаст базу данных при первом запуске. Вам нужно только создать пользователя MySQL.
-
-```bash
-# Подключение к MySQL
-sudo mysql -u root -p
-```
-
-В MySQL консоли выполните:
-
-```sql
--- Создание пользователя
-CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'your_very_secure_password_123!';
-
--- Предоставление прав (приложение само создаст базу данных)
-GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
-
--- Применение изменений
-FLUSH PRIVILEGES;
-
--- Проверка создания пользователя
-SELECT User, Host FROM mysql.user WHERE User = 'cursor_user';
-
--- Выход
-EXIT;
-```
-
-### 2. Настройка безопасности MySQL
+**Важно:** База данных MySQL устанавливается и настраивается автоматически через Docker Compose!
 
 ```bash
-# Редактирование конфигурации MySQL
-sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
+# Копирование примера конфигурации
+cp .env.example .env
+
+# Редактирование конфигурации
+nano .env
 ```
 
-Добавьте или измените следующие строки:
+Настройте следующие переменные:
 
-```ini
-[mysqld]
-# Привязка к localhost только
-bind-address = 127.0.0.1
+```env
+# Настройки безопасности (обязательно измените!)
+SECRET_KEY=your_generated_secret_key_here
+ADMIN_PASSWORD=your_admin_password_here
 
-# Максимальное количество соединений
-max_connections = 100
+# Настройки базы данных (опционально)
+DB_PASSWORD=your_secure_password_here
 
-# Таймаут неактивных соединений
-wait_timeout = 600
-interactive_timeout = 600
+# Настройки email
+EMAIL_DOMAIN=yourdomain.com
 
-# Логирование
-log_error = /var/log/mysql/error.log
-slow_query_log = 1
-slow_query_log_file = /var/log/mysql/slow.log
-long_query_time = 2
+# Настройки сервера
+HOST=0.0.0.0
+PORT=8001
+DEBUG=false
 ```
 
-Перезапустите MySQL:
+### 2. Генерация секретного ключа
 
 ```bash
-sudo systemctl restart mysql
+# Генерация случайного секретного ключа
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
+
+Скопируйте результат в переменную `SECRET_KEY` в файле `.env`.
 
 ## Развертывание приложения
 
@@ -203,53 +186,7 @@ git clone https://github.com/YOUR_USERNAME/cursor-auto-account.git
 cd cursor-auto-account
 ```
 
-### 2. Настройка переменных окружения
-
-```bash
-# Копирование примера конфигурации
-cp .env.example .env
-
-# Редактирование конфигурации
-nano .env
-```
-
-Настройте следующие переменные:
-
-```env
-# Настройки базы данных
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=cursor_user
-DB_PASSWORD=your_very_secure_password_123!
-DB_NAME=cursor_accounts
-
-# Настройки безопасности
-SECRET_KEY=your_generated_secret_key_here
-TOKEN_EXPIRY_DAYS=30
-
-# Настройки администратора
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=your_admin_password_here
-
-# Настройки email
-EMAIL_DOMAIN=yourdomain.com
-
-# Настройки сервера
-HOST=0.0.0.0
-PORT=8001
-DEBUG=false
-```
-
-### 3. Генерация секретного ключа
-
-```bash
-# Генерация случайного секретного ключа
-python3 -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-Скопируйте результат в переменную `SECRET_KEY` в файле `.env`.
-
-### 4. Запуск приложения
+### 2. Запуск приложения
 
 ```bash
 # Сборка и запуск контейнеров
@@ -259,8 +196,14 @@ docker-compose up -d
 docker-compose ps
 
 # Просмотр логов
-docker-compose logs -f app
+docker-compose logs -f
 ```
+
+**Что происходит при запуске:**
+- ✅ Автоматически устанавливается MySQL 8.0
+- ✅ Создается база данных `cursor_accounts`
+- ✅ Запускается приложение Cursor Account Manager
+- ✅ Настраивается сеть между контейнерами
 
 ## Настройка Caddy для поддомена
 

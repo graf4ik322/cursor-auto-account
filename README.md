@@ -59,15 +59,9 @@ cd cursor-auto-account
 2. 配置环境变量（可选）
 创建 `.env` 文件并设置以下环境变量：
 ```
-DB_HOST=your_db_host
-DB_PORT=3306
-DB_USER=your_db_user
 DB_PASSWORD=your_db_password
-DB_NAME=your_db_name
 SECRET_KEY=your_secret_key
-TOKEN_EXPIRY_DAYS=30
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin
+ADMIN_PASSWORD=your_admin_password
 EMAIL_DOMAIN=your_email_domain
 ```
 
@@ -75,6 +69,12 @@ EMAIL_DOMAIN=your_email_domain
 ```bash
 docker-compose up -d
 ```
+
+**自动安装内容：**
+- ✅ MySQL 8.0 数据库
+- ✅ 自动创建数据库和表
+- ✅ 应用程序容器
+- ✅ 网络配置
 
 > 注意：如果不创建 `.env` 文件，将使用 docker-compose.yml 中的默认值
 

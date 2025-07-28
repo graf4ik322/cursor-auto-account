@@ -129,56 +129,48 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 **DEBUG** - Режим отладки. Установите `true` только для разработки. В продакшене всегда `false`.
 
-#### Шаг 3: Настройка базы данных
+#### Шаг 3: Настройка переменных окружения (опционально)
 
-**Важно:** Приложение автоматически создаст базу данных при первом запуске. Вам нужно только установить MySQL сервер.
+**Важно:** База данных MySQL устанавливается и настраивается автоматически через Docker Compose. Вам не нужно устанавливать MySQL вручную!
 
-**Установка MySQL:**
+Если вы хотите изменить настройки по умолчанию, отредактируйте `.env` файл:
 
-**Ubuntu/Debian:**
-```bash
-sudo apt update
-sudo apt install mysql-server
-sudo mysql_secure_installation
-```
-
-**CentOS/RHEL:**
-```bash
-sudo yum install mysql-server
-sudo systemctl start mysqld
-sudo mysql_secure_installation
-```
-
-**Создание пользователя MySQL (рекомендуется для продакшена):**
-```bash
-sudo mysql -u root -p
-```
-
-В MySQL консоли выполните:
-```sql
-CREATE USER 'cursor_user'@'localhost' IDENTIFIED BY 'your_secure_password';
-GRANT ALL PRIVILEGES ON *.* TO 'cursor_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
-
-Затем обновите `.env` файл:
 ```env
-DB_USER=cursor_user
+# Настройки базы данных (опционально)
+DB_USER=root
 DB_PASSWORD=your_secure_password
-```
+DB_NAME=cursor_accounts
 
-**Примечание:** Если вы не создаете отдельного пользователя, приложение будет использовать root пользователя с настройками по умолчанию.
+# Настройки безопасности (обязательно измените!)
+SECRET_KEY=your_generated_secret_key
+ADMIN_PASSWORD=your_admin_password
+```
 
 #### Шаг 4: Запуск сервиса
 ```bash
 docker-compose up -d
 ```
 
+**Что происходит при запуске:**
+- ✅ Автоматически устанавливается MySQL 8.0
+- ✅ Создается база данных `cursor_accounts`
+- ✅ Запускается приложение Cursor Account Manager
+- ✅ Настраивается сеть между контейнерами
+
 > **Важно:** Если вы не создали файл `.env`, будут использованы значения по умолчанию из `docker-compose.yml`
 
 #### Шаг 5: Проверка работы
 Откройте браузер и перейдите по адресу: `http://localhost:8001`
+
+**Проверка статуса контейнеров:**
+```bash
+docker-compose ps
+```
+
+**Просмотр логов:**
+```bash
+docker-compose logs -f
+```
 
 ### Развертывание на поддомене с Cloudflare
 
